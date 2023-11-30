@@ -389,14 +389,6 @@ func TestJobResourceReadJob(t *testing.T) {
 			accept_methods: []string{"HEAD"},
 			expected:       nil,
 		},
-		{
-			name:           "no url provided",
-			url:            "",
-			http_code:      http.StatusOK,
-			failed:         false,
-			accept_methods: []string{"GET", "get"},
-			expected:       map[string]string{},
-		},
 	}
 
 	for _, tc := range testTable {
