@@ -73,5 +73,5 @@ func testGetResource(urlPath string) (map[string]interface{}, error) {
 
 	var result map[string]interface{}
 	err = json.Unmarshal(body, &result)
-	return result, nil
+	return result, err
 }
