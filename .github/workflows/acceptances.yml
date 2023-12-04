@@ -1,4 +1,5 @@
-name: unit tests
+---
+name: acceptance tests
 
 concurrency:
   group: ${{ github.head_ref }}
@@ -27,5 +28,12 @@ jobs:
       - name: Build
         run: go build -v ./...
 
+      - name: Build awx_devel image for running checks
+        id: run-awx
+        uses: ./.github/actions/run_awx
+  
+      - name: Test cluster using simple command
+        run: curl -k -u '${{ steps.run-awx.outputs.admin }}:${{ steps.run-awx.outputs.password }}' https://localhost:8043/api/v2/job_templates/
+
       - name: Run unit tests
-        run: make test
+        run: make testacc
