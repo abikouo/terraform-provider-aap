@@ -5,13 +5,12 @@ inputs:
     description: The python version to use for awx
     required: false
     default: '3.10'
-outputs:
   admin:
-    description: The username used to connect to awx
-    value: 'admin'
+    description: The awx admin username
+    default: 'admin'
   password:
-    description: The user password used to connect to awx
-    value: 'test123'
+    description: The awx admin password used
+    default: 'test123'
 
 runs:
   using: composite
@@ -25,19 +24,17 @@ runs:
       run: python3 -m pip install ansible-core
       shell: bash
 
-    - name: Get python version from Makefile
-      shell: bash
-      run: echo py_version=`make PYTHON_VERSION` >> $GITHUB_ENV
-
     - name: Clone required awx version
       uses: actions/checkout@v4
       with:
         repository: gravesm/awx
+        path: "./aws"
 
     - name: Build image for current source checkout
       shell: bash
       run: |
         make docker-compose-build
+      working-directory: "./aws"
 
     - name: Install system deps
       shell: bash
@@ -46,6 +43,7 @@ runs:
     - name: Start AWX
       shell: bash
       run: COMPOSE_UP_OPTS="-d" make docker-compose
+      working-directory: "./aws"
 
     - name: Update default AWX password
       shell: bash
@@ -57,5 +55,6 @@ runs:
         done
         echo "AWX is up, updating the password..."
         docker exec -i tools_awx_1 sh <<-EOSH
-          awx-manage update_password --username=admin --password=test123
+          awx-manage update_password --username=${{ inputs.admin }} --password=${{ inputs.password }}
         EOSH
+      working-directory: "./aws"

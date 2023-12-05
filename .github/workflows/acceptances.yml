@@ -1,10 +1,6 @@
 ---
 name: acceptance tests
 
-concurrency:
-  group: ${{ github.head_ref }}
-  cancel-in-progress: true
-
 on:
   pull_request:
 
@@ -31,9 +27,18 @@ jobs:
       - name: Build awx_devel image for running checks
         id: run-awx
         uses: ./.github/actions/run_awx
+        with:
+            admin: "admin"
+            password: "test123"
   
       - name: List job templates resources
         run: curl -k -u '${{ steps.run-awx.outputs.admin }}:${{ steps.run-awx.outputs.password }}' https://localhost:8043/api/v2/job_templates/
 
       - name: Run unit tests
         run: make testacc
+        env:
+            AAP_HOST: "https://localhost:8043"
+            AAP_USERNAME: "admin"
+            AAP_PASSWORD: "test123"
+            AAP_TEST_JOB_TEMPLATE_ID: 7
+            AAP_TEST_JOB_INVENTORY_ID: 2
