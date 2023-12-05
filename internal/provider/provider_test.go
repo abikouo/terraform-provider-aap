@@ -27,14 +27,23 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 
 func testAccPreCheck(t *testing.T) {
 
-	requiredAAPEnvVars := []string{
-		"AAP_HOST", "AAP_USERNAME", "AAP_PASSWORD", "AAP_INSECURE_SKIP_VERIFY",
+	requiredAAPEnvVars := map[string]string{
+		"AAP_HOST":                 "https://localhost:8043",
+		"AAP_USERNAME":             "",
+		"AAP_PASSWORD":             "",
+		"AAP_INSECURE_SKIP_VERIFY": "true",
 	}
 
-	for _, key := range requiredAAPEnvVars {
-		if v := os.Getenv(key); v == "" {
-			t.Fatalf("'%s' environment variable must be set for acceptance tests", key)
+	for k, d := range requiredAAPEnvVars {
+		v := os.Getenv(k)
+		if v == "" {
+			if d == "" {
+				t.Fatalf("'%s' environment variable must be set for acceptance tests", k)
+			} else {
+				t.Setenv(k, d)
+			}
 		}
+
 	}
 }
 
