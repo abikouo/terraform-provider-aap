@@ -45,6 +45,13 @@ runs:
       run: COMPOSE_UP_OPTS="-d" make docker-compose
       working-directory: "./aws"
 
+    - name: Install awx_collection
+      shell: bash
+      run: |
+        ansible-galaxy collection build --force
+        ansible-galaxy collection install --force awx-awx-*.tar.gz
+      working-directory: "./aws/awx_collection"
+
     - name: Update default AWX password
       shell: bash
       run: |

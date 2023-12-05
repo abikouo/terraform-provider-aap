@@ -8,7 +8,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-        go_version: '1.21.1'
+      go_version: '1.21.1'
+      test_config: "${GITHUB_WORKSPACE}/config.sh"
 
     steps:
       - uses: actions/checkout@v4
@@ -28,17 +29,23 @@ jobs:
         id: run-awx
         uses: ./.github/actions/run_awx
         with:
-            admin: "admin"
-            password: "test123"
-  
-      - name: List job templates resources
-        run: curl -k -u '${{ steps.run-awx.outputs.admin }}:${{ steps.run-awx.outputs.password }}' https://localhost:8043/api/v2/job_templates/
+          admin: "admin"
+          password: "test123"
+
+      - name: Configure awx cluster
+        run: |
+          echo "" > "${{ env.test_config }}"
+          chmod +x ${{ env.test_config }}
+          ansible-playbook awx_configure.yml -v -e "config_file=${{ env.test_config }}"
+        working-directory: "./ci"
+        env:
+          AAP_HOST: "https://localhost:8043"
+          AAP_USERNAME: "admin"
+          AAP_PASSWORD: "test123"
 
       - name: Run unit tests
-        run: make testacc
+        run: source ${{ env.test_config }} && make testacc
         env:
-            AAP_HOST: "https://localhost:8043"
-            AAP_USERNAME: "admin"
-            AAP_PASSWORD: "test123"
-            AAP_TEST_JOB_TEMPLATE_ID: 7
-            AAP_TEST_JOB_INVENTORY_ID: 2
+          AAP_HOST: "https://localhost:8043"
+          AAP_USERNAME: "admin"
+          AAP_PASSWORD: "test123"
